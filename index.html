@@ -388,7 +388,7 @@ function renderQuiz(){
         <div class="mt-2">${renderStepper()}</div>
       </div>
 
-      <div class="mt-3 flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div class="mt-3 flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="bg-amber-50 border border-amber-100 rounded-xl p-4 text-sm text-slate-700 overflow-y-auto">
           <h2 class="text-base font-semibold text-slate-800 mb-2">${esc(groep.titel)} — bronmateriaal</h2>
           ${bronHtml || `<p class="text-slate-400 italic">Geen bronmateriaal bij deze opgave.</p>`}
