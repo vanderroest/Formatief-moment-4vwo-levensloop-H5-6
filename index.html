@@ -22,8 +22,8 @@
    Leeg laten = de app werkt met de "code kopiëren en naar de docent sturen"-
    oplossing. Zodra hier een URL en sleutel staan, slaat de app resultaten
    automatisch en rechtstreeks op, en leest het docentoverzicht ze live uit. */
-const SUPABASE_URL = "";
-const SUPABASE_ANON_KEY = "";
+const SUPABASE_URL = "https://sislandwzwhxldcjqnxq.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_uk9mXdxsKyFSwnTXOoBoIw_mQsz3TlR";
 const SUPABASE_AAN = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
 let supabaseClient = null;
 if (SUPABASE_AAN) {
@@ -206,6 +206,34 @@ function esc(s){ return (s==null?"":String(s)).replace(/[&<>"']/g, c => ({'&':'&
 function fmt(n){ return (Math.round(n*10)/10).toString().replace(".", ","); }
 function qTotalSelf(a){ return QUESTIONS.reduce((s,q)=> s + (Number(a?.[q.id]?.selfScore)||0), 0); }
 function qTotalProg(a){ return QUESTIONS.reduce((s,q)=> s + (Number(a?.[q.id]?.progScore)||0), 0); }
+
+/* Vergelijkt zelfbeoordeling met de automatische controle en geeft een
+   vriendelijke, beknopte terugkoppeling over een eventueel patroon.
+   De automatische score zelf wordt nooit aan de leerling getoond. */
+function analyseerZelfbeoordeling(a){
+  const vergeleken = QUESTIONS
+    .filter(q => a[q.id]?.checked && a[q.id]?.selfScore != null)
+    .map(q => {
+      const self = Number(a[q.id].selfScore)||0, prog = Number(a[q.id].progScore)||0;
+      return { relatief: (self - prog) / q.max };
+    });
+  if (vergeleken.length < 3) {
+    return "Je hebt nog te weinig vragen zelf beoordeeld om hier iets zinnigs over te zeggen.";
+  }
+  const DREMPEL = 0.15;
+  const soepel = vergeleken.filter(d => d.relatief > DREMPEL).length;
+  const streng = vergeleken.filter(d => d.relatief < -DREMPEL).length;
+  const n = vergeleken.length;
+  const gem = vergeleken.reduce((s,d)=>s+d.relatief,0)/n;
+
+  if (soepel/n >= 0.5 && gem > DREMPEL*0.6) {
+    return "Bij meerdere vragen gaf je jezelf een hogere score dan je antwoord volgens de automatische check verdiende. Dat is op zich niet erg, maar probeer bij het nakijken net iets kritischer te zijn: vergelijk je antwoord woord voor woord met het modelantwoord voor je jezelf punten geeft.";
+  }
+  if (streng/n >= 0.5 && gem < -DREMPEL*0.6) {
+    return "Je was op meerdere vragen juist streng voor jezelf: je gaf jezelf vaak minder punten dan je antwoord volgens de automatische check verdiende. Mooi dat je kritisch bent, maar wees niet te hard voor jezelf — als de kern van het modelantwoord erin staat, mag je jezelf de punten gewoon geven.";
+  }
+  return "Je zelfbeoordeling kwam dit keer goed overeen met de automatische controle. Dat is een teken dat je een realistisch beeld hebt van je eigen werk — knap gedaan!";
+}
 function groepVoltooid(idx){ return GROUPS[idx].items.filter(i=>i.type==="vraag").every(v => answers[v.id]?.checked); }
 
 function b64encode(obj){
@@ -307,11 +335,13 @@ function renderQuiz(){
         <div class="mt-2">${renderStepper()}</div>
       </div>
       <div class="mt-6 bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-        <div class="text-sm text-slate-500">Jouw totaal</div>
-        <div class="text-lg font-bold text-slate-900">${fmt(totSelf)} / ${MAX_TOTAL} <span class="text-sm font-normal text-slate-400">(zelf)</span>
-          &nbsp;·&nbsp; ${fmt(totProg)} / ${MAX_TOTAL} <span class="text-sm font-normal text-slate-400">(programma)</span>
-        </div>
-        ${aantalNagekeken < QUESTIONS.length ? `<p class="text-xs text-amber-600 mt-2">Let op: nog niet alle vragen zijn nagekeken. Gebruik de knoppen hierboven om terug te gaan.</p>` : ``}
+        <div class="text-sm text-slate-500">Jouw totaal (zelfbeoordeling)</div>
+        <div class="text-lg font-bold text-slate-900">${fmt(totSelf)} / ${MAX_TOTAL}</div>
+        ${aantalNagekeken < QUESTIONS.length ? `<p class="text-xs text-amber-600 mt-2">Let op: nog niet alle vragen zijn nagekeken. Gebruik de knoppen hierboven om terug te gaan.</p>` : `
+        <div class="mt-4 pt-4 border-t border-slate-100">
+          <div class="text-sm font-medium text-slate-700 mb-1">Hoe ging het zelf nakijken?</div>
+          <p class="text-sm text-slate-600">${esc(analyseerZelfbeoordeling(answers))}</p>
+        </div>`}
         ${SUPABASE_AAN ? `
           <div class="mt-4 pt-4 border-t border-slate-100 text-sm">
             <span class="font-medium text-slate-700">Inleveren bij de docent:</span>
@@ -383,11 +413,6 @@ function renderQuiz(){
               <div>
                 <div class="text-sm font-medium text-slate-600 mb-1">Jouw zelfbeoordeling</div>
                 <div class="flex gap-1.5 flex-wrap">${scoreOptions(q, a)}</div>
-              </div>
-              <div class="flex items-center gap-2 text-sm">
-                <span class="font-medium text-slate-600">Programmabeoordeling:</span>
-                <span class="font-semibold text-indigo-700">${fmt(a.progScore)} / ${q.max}</span>
-                <span class="text-xs text-slate-400">(automatisch)</span>
               </div>
             </div>
           ` : ``}
