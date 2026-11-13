@@ -206,7 +206,6 @@ function fmt(n){ return (Math.round(n*10)/10).toString().replace(".", ","); }
 function qTotalSelf(a){ return QUESTIONS.reduce((s,q)=> s + (Number(a?.[q.id]?.selfScore)||0), 0); }
 function qTotalProg(a){ return QUESTIONS.reduce((s,q)=> s + (Number(a?.[q.id]?.progScore)||0), 0); }
 function groepVoltooid(idx){ return GROUPS[idx].items.filter(i=>i.type==="vraag").every(v => answers[v.id]?.checked); }
-function maxOntgrendeld(){ let i=0; while (i<GROUPS.length && groepVoltooid(i)) i++; return Math.min(i, GROUPS.length-1); }
 
 function b64encode(obj){
   const bytes = new TextEncoder().encode(JSON.stringify(obj));
@@ -281,69 +280,77 @@ function renderStart(){
 }
 
 /* ============================= RENDER: QUIZ ============================= */
-function renderQuiz(){
-  const app = document.getElementById("app");
-  const maxOnt = maxOntgrendeld();
-  if (huidigeGroep > maxOnt) huidigeGroep = maxOnt;
-  const alleKlaar = GROUPS.every((_,i)=>groepVoltooid(i));
+const INLEVER_STAP = GROUPS.length; // extra "stap" na alle opgaven
 
-  let stepper = `<div class="flex gap-1.5 flex-wrap">` + GROUPS.map((g,i) => {
+function renderStepper(){
+  return `<div class="flex gap-1.5 flex-wrap">` + GROUPS.map((g,i) => {
     const klaar = groepVoltooid(i);
     const actief = i===huidigeGroep;
-    const bereikbaar = i<=maxOnt;
-    return `<button data-idx="${i}" class="stap-btn text-xs rounded-full px-2.5 py-1 border ${actief? "bg-indigo-600 text-white border-indigo-600" : klaar ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-slate-100 text-slate-400 border-slate-200"}" ${bereikbaar? "" : "disabled"}>${klaar?"✓ ":""}${esc(g.titel)}</button>`;
-  }).join("") + `</div>`;
+    return `<button data-idx="${i}" class="stap-btn text-xs rounded-full px-2.5 py-1 border ${actief? "bg-indigo-600 text-white border-indigo-600" : klaar ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-white text-slate-500 border-slate-300"}">${klaar?"✓ ":""}${esc(g.titel)}</button>`;
+  }).join("") + `<button data-idx="${INLEVER_STAP}" class="stap-btn text-xs rounded-full px-2.5 py-1 border ${huidigeGroep===INLEVER_STAP? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-slate-500 border-slate-300"}">Inleveren</button></div>`;
+}
 
-  if (alleKlaar) {
+function renderQuiz(){
+  const app = document.getElementById("app");
+
+  if (huidigeGroep === INLEVER_STAP) {
     const totSelf = qTotalSelf(answers), totProg = qTotalProg(answers);
+    const aantalNagekeken = QUESTIONS.filter(q=>answers[q.id]?.checked).length;
     app.innerHTML = `
-      <div class="pt-8">
-        <h1 class="text-lg font-bold text-slate-900">${esc(studentName)} — alle opgaven afgerond</h1>
-        <div class="mt-3">${stepper}</div>
-        <div class="mt-6 bg-white rounded-xl shadow-sm border border-slate-200 p-5">
-          <div class="text-sm text-slate-500">Jouw totaal</div>
-          <div class="text-lg font-bold text-slate-900">${fmt(totSelf)} / ${MAX_TOTAL} <span class="text-sm font-normal text-slate-400">(zelf)</span>
-            &nbsp;·&nbsp; ${fmt(totProg)} / ${MAX_TOTAL} <span class="text-sm font-normal text-slate-400">(programma)</span>
-          </div>
-          ${SUPABASE_AAN ? `
-            <div class="mt-4 pt-4 border-t border-slate-100 text-sm">
-              <span class="font-medium text-slate-700">Inleveren bij de docent:</span>
-              <span class="text-slate-500">${esc(syncStatus || "Wordt automatisch opgeslagen.")}</span>
-            </div>` : `
-            <div class="mt-4 pt-4 border-t border-slate-100">
-              <div class="text-sm font-medium text-slate-700 mb-2">Inleveren bij de docent</div>
-              <p class="text-xs text-slate-500 mb-2">Kopieer de code hieronder en plak die in een bericht naar je docent via Teams, of lever hem in als antwoord in Magister.</p>
-              <textarea id="code-output" readonly class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono bg-slate-50" rows="3">${esc(maakCode())}</textarea>
-              <button id="copy-code-btn" class="mt-2 text-sm bg-indigo-600 text-white rounded-lg px-3 py-1.5 hover:bg-indigo-700">Kopieer code</button>
-            </div>`}
+      <div class="sticky top-0 bg-slate-50/95 backdrop-blur pt-4 pb-3 -mx-4 px-4 z-10 border-b border-slate-200">
+        <div class="flex justify-between items-baseline">
+          <h1 class="text-lg font-bold text-slate-900">${esc(studentName)}</h1>
+          <span class="text-sm text-slate-500">${aantalNagekeken}/${QUESTIONS.length} vragen nagekeken</span>
         </div>
-      </div>`;
+        <div class="mt-2">${renderStepper()}</div>
+      </div>
+      <div class="mt-6 bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+        <div class="text-sm text-slate-500">Jouw totaal</div>
+        <div class="text-lg font-bold text-slate-900">${fmt(totSelf)} / ${MAX_TOTAL} <span class="text-sm font-normal text-slate-400">(zelf)</span>
+          &nbsp;·&nbsp; ${fmt(totProg)} / ${MAX_TOTAL} <span class="text-sm font-normal text-slate-400">(programma)</span>
+        </div>
+        ${aantalNagekeken < QUESTIONS.length ? `<p class="text-xs text-amber-600 mt-2">Let op: nog niet alle vragen zijn nagekeken. Gebruik de knoppen hierboven om terug te gaan.</p>` : ``}
+        ${SUPABASE_AAN ? `
+          <div class="mt-4 pt-4 border-t border-slate-100 text-sm">
+            <span class="font-medium text-slate-700">Inleveren bij de docent:</span>
+            <span class="text-slate-500">${esc(syncStatus || "Wordt automatisch opgeslagen zodra je een vraag nakijkt.")}</span>
+          </div>` : `
+          <div class="mt-4 pt-4 border-t border-slate-100">
+            <div class="text-sm font-medium text-slate-700 mb-2">Inleveren bij de docent</div>
+            <p class="text-xs text-slate-500 mb-2">Kopieer de code hieronder en plak die in een bericht naar je docent via Teams, of lever hem in als antwoord in Magister.</p>
+            <textarea id="code-output" readonly class="w-full border border-slate-300 rounded-lg px-3 py-2 text-xs font-mono bg-slate-50" rows="3">${esc(maakCode())}</textarea>
+            <button id="copy-code-btn" class="mt-2 text-sm bg-indigo-600 text-white rounded-lg px-3 py-1.5 hover:bg-indigo-700">Kopieer code</button>
+          </div>`}
+      </div>
+      <button id="terug-btn" class="mt-4 text-sm text-slate-400 underline">Terug naar start</button>
+    `;
     bindStepper(); bindCopyButton();
+    document.getElementById("terug-btn").onclick = () => { view = "start"; render(); };
     return;
   }
 
   const groep = GROUPS[huidigeGroep];
   const vragenInGroep = groep.items.filter(i=>i.type==="vraag");
+  const bronHtml = groep.items.filter(i=>i.type==="bron").map(i=>i.html).join(`<hr class="my-3 border-amber-200">`);
   const beantwoordInGroep = vragenInGroep.filter(q => answers[q.id]?.checked).length;
-  const dezeGroepKlaar = beantwoordInGroep === vragenInGroep.length;
 
   let html = `
-    <div class="sticky top-0 bg-slate-50/95 backdrop-blur pt-4 pb-3 -mx-4 px-4 z-10 border-b border-slate-200">
+    <div class="sticky top-0 bg-slate-50 pt-4 pb-3 -mx-4 px-4 z-20 border-b border-slate-200 shadow-sm">
       <div class="flex justify-between items-baseline">
         <h1 class="text-lg font-bold text-slate-900">${esc(studentName)}</h1>
         <span class="text-sm text-slate-500">${beantwoordInGroep}/${vragenInGroep.length} in deze opgave</span>
       </div>
-      <div class="mt-2">${stepper}</div>
+      <div class="mt-2">${renderStepper()}</div>
+      <h2 class="text-base font-semibold text-slate-800 mt-2">${esc(groep.titel)}</h2>
+      ${bronHtml ? `
+      <div class="bg-amber-50 border border-amber-100 rounded-xl p-4 mt-2 mb-1 text-sm text-slate-700 max-h-[34vh] overflow-y-auto">
+        ${bronHtml}
+      </div>` : ``}
     </div>
-    <div class="space-y-4 mt-5">
-      <h2 class="text-base font-semibold text-slate-800">${esc(groep.titel)}</h2>`;
+    <div class="space-y-4 mt-4">`;
 
-  for (const item of groep.items) {
-    if (item.type === "bron") {
-      html += `<div class="bg-amber-50 border border-amber-100 rounded-xl p-4 text-sm text-slate-700">${item.html}</div>`;
-      continue;
-    }
-    const q = item, a = answers[q.id] || {};
+  for (const q of vragenInGroep) {
+    const a = answers[q.id] || {};
     html += `
       <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
         <div class="flex justify-between items-start gap-3">
@@ -379,8 +386,7 @@ function renderQuiz(){
     </div>
     <div class="mt-6 flex justify-between items-center">
       <button id="terug-btn" class="text-sm text-slate-400 underline">Terug naar start</button>
-      ${dezeGroepKlaar && huidigeGroep < GROUPS.length-1 ? `<button id="volgende-btn" class="bg-indigo-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-indigo-700">Volgende opgave →</button>` : ``}
-      ${dezeGroepKlaar && huidigeGroep === GROUPS.length-1 ? `<button id="volgende-btn" class="bg-emerald-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-emerald-700">Afronden →</button>` : ``}
+      <button id="volgende-btn" class="bg-indigo-600 text-white rounded-lg px-4 py-2 text-sm font-medium hover:bg-indigo-700">${huidigeGroep < GROUPS.length-1 ? "Volgende opgave →" : "Naar inleveren →"}</button>
     </div>
     <button id="docent-link2" class="mt-4 text-sm text-slate-400 underline">Docentoverzicht →</button>
   `;
@@ -422,7 +428,7 @@ function renderQuiz(){
   const terug = document.getElementById("terug-btn");
   if (terug) terug.onclick = () => { view = "start"; render(); };
   const volgende = document.getElementById("volgende-btn");
-  if (volgende) volgende.onclick = () => { huidigeGroep++; saveLocal(); window.scrollTo(0,0); render(); };
+  if (volgende) volgende.onclick = () => { huidigeGroep = Math.min(huidigeGroep+1, INLEVER_STAP); saveLocal(); window.scrollTo(0,0); render(); };
   const dl2 = document.getElementById("docent-link2");
   if (dl2) dl2.onclick = () => { location.hash = "#docent"; view="docent"; render(); };
   bindStepper();
