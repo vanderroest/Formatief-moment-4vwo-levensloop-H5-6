@@ -12,6 +12,8 @@
   table.bron-tabel th, table.bron-tabel td { border: 1px solid #e2e8f0; padding: 4px 8px; text-align: center; font-size: 0.75rem; }
   table.bron-tabel th { background: #f1f5f9; font-weight: 600; }
   table.bron-tabel td:first-child, table.bron-tabel th:first-child { text-align: left; }
+  .jargon-i { display:inline-flex; align-items:center; justify-content:center; width:15px; height:15px; margin-left:2px; font-size:11px; line-height:1; border-radius:50%; background:#e0e7ff; color:#4338ca; cursor:pointer; vertical-align:middle; border:none; padding:0; }
+  .jargon-i:hover { background:#c7d2fe; }
 </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen">
@@ -97,75 +99,149 @@ const GROUPS = [
     { type:"bron", html: BRON_51_ING },
     { type:"bron", html: BRON_51_GUUS },
     { type:"vraag", id:"q1", label:"a", max:1, vraag:"Bereken de reële rente in 2018.",
-      model:"Reële rente = (105,3 / 101,4) × 100 = 103,85 → 103,85 – 100 = 3,85%.", getallen:[3.85] },
+      model:"Reële rente = (105,3 / 101,4) × 100 = 103,85 → 103,85 – 100 = 3,85%.", getallen:[3.85],
+      hint:"Gebruik de vuistregel: reële rente = nominale rente – inflatiepercentage. Kijk in de tabel naar de cijfers van 2018." },
     { type:"vraag", id:"q2", label:"b", max:1, vraag:"In welk jaar was de reële rente het laagst?",
-      model:"In 2016. De reële rente is dan (104,9 / 103,2) × 100 – 100 = 1,65%.", getallen:[2016] },
+      model:"In 2016. De reële rente is dan (104,9 / 103,2) × 100 – 100 = 1,65%.", getallen:[2016],
+      hint:"Bereken voor elk jaar de reële rente (nominale rente – inflatie) en vergelijk de uitkomsten." },
     { type:"vraag", id:"q3", label:"c", max:2, vraag:"Het aandeel van de bruto rentelasten (rentelasten vóór aftrek van het belastingvoordeel) in het inkomen van Guus en Ria zal bij inflatie toenemen, afnemen of gelijk blijven? Citeer de zin waaruit dit blijkt.",
       model:"Afnemen. De zin waaruit dit blijkt: 'Ook inflatie levert Guus en Ria voordeel op aangezien het rentepercentage vast ligt en het inkomen aangepast wordt aan de inflatie.'",
-      kernwoorden:[["afneemt","afname","daalt","daling","minder"],["aangepast aan de inflatie","rentepercentage vast","vast ligt"]] },
+      kernwoorden:[["afneemt","afname","daalt","daling","minder"],["aangepast aan de inflatie","rentepercentage vast","vast ligt"]],
+      hint:"Denk aan wat er met het inkomen van Guus en Ria gebeurt bij inflatie, en zoek de zin in de tekst die dat beschrijft." },
     { type:"vraag", id:"q4", label:"d", max:2, vraag:"Leg uit waarom de netto rentelasten voor Guus en Ria kunnen dalen als het inkomen stijgt.",
       model:"Bij toename van het inkomen kan een hoger (marginaal) belastingtarief van toepassing worden, waardoor zij van het rentebedrag een groter deel via het belastingvoordeel terugkrijgen.",
-      kernwoorden:[["marginaal","belastingtarief","belastingschijf","hoger tarief"],["belastingvoordeel","aftrek","terugkrijgen","teruggaaf"]] },
+      kernwoorden:[["marginaal","belastingtarief","belastingschijf","hoger tarief"],["belastingvoordeel","aftrek","terugkrijgen","teruggaaf"]],
+      hint:"Denk aan het progressieve belastingstelsel: wat gebeurt er met het belastingtarief (en dus het belastingvoordeel) als het inkomen stijgt?" },
     { type:"vraag", id:"q5", label:"e", max:1, vraag:"In welk geval is er sprake van een negatieve reële rente?",
       model:"Als de inflatie hoger is dan de nominale rente.",
-      kernwoorden:[["inflatie hoger","hoger dan de nominale","groter dan de nominale","inflatie groter"]] },
+      kernwoorden:[["inflatie hoger","hoger dan de nominale","groter dan de nominale","inflatie groter"]],
+      hint:"Vergelijk de nominale rente met het inflatiepercentage: wanneer wordt het verschil negatief?" },
     { type:"vraag", id:"q6", label:"f", max:1, vraag:"Op 1 januari 2017 bedroeg de waarde van het huis van Guus en Ria € 300.000. Bereken de waarde van het huis op 1 januari 2022 als de inflatie gemiddeld 2,2% per jaar bedraagt.",
-      model:"300.000 × 1,022⁵ (5 jaar, van 2017 naar 2022) = € 334.484,30.", getallen:[334484] },
+      model:"300.000 × 1,022⁵ (5 jaar, van 2017 naar 2022) = € 334.484,30.", getallen:[334484],
+      hint:"Vermenigvuldig de startwaarde met (1 + inflatiepercentage) tot de macht het aantal jaren." },
     { type:"vraag", id:"q7", label:"g", max:2, vraag:"Leg uit dat de inflatie de huiseigenaar met een hypotheeklening een vermogensgroei oplevert.",
       model:"Inflatie heeft geen invloed op de (nominale) hypotheekschuld, terwijl de waarde van het huis wel meestijgt met de inflatie. Het verschil tussen de waarde van het huis en de hypotheekschuld (= vermogen) neemt daardoor toe.",
-      kernwoorden:[["hypotheekschuld","schuld blijft","schuld gelijk"],["waarde van het huis","huizenprijs","huis stijgt"],["vermogen neemt toe","vermogen stijgt","vermogensgroei"]] },
+      kernwoorden:[["hypotheekschuld","schuld blijft","schuld gelijk"],["waarde van het huis","huizenprijs","huis stijgt"],["vermogen neemt toe","vermogen stijgt","vermogensgroei"]],
+      hint:"Bedenk wat er gebeurt met de huizenprijs bij inflatie, en wat er gebeurt met de (nominale) hypotheekschuld. Vermogen = waarde huis – schuld." },
   ]},
   { id:"g2", titel:"Opdracht 5.2", items:[
     { type:"bron", html: BRON_52 },
     { type:"vraag", id:"q8", label:"", max:2, vraag:"Leg uit dat er bij zowel Imke als Eva sprake is van ruilen over de tijd.",
       model:"Bij Imke is sprake van ruilen over de tijd (intertemporele ruil) omdat zij spaart voor de reis en daarmee haar consumptie uitstelt. Bij Eva is ook sprake van ruilen over de tijd, omdat zij door te lenen voor haar studie het moment van consumptie vervroegt.",
-      kernwoorden:[["imke","sparen","uitstelt","uitstellen"],["eva","lenen","leenstelsel","vervroegt","vervroegen"]] },
+      kernwoorden:[["imke","sparen","uitstelt","uitstellen"],["eva","lenen","leenstelsel","vervroegt","vervroegen"]],
+      hint:"Ruilen over de tijd betekent consumptie uitstellen (sparen) of naar voren halen (lenen). Wie doet wat?" },
   ]},
   { id:"g3", titel:"Opdracht 6.1", items:[
     { type:"bron", html: BRON_61_A },
     { type:"vraag", id:"q9", label:"a", max:2, vraag:"Leg uit hoe een daling van de rente de dekkingsgraad van pensioenfondsen onder druk zet.",
       model:"Bij een daling van de rente heeft het pensioenfonds een groter bedrag nodig om te laten aangroeien tot een voldoende hoog pensioen in de toekomst. (Of: een rentedaling leidt tot lagere beleggingsopbrengsten, waardoor het vermogen van het pensioenfonds minder hard groeit.)",
-      kernwoorden:[["beleggingsopbrengst","rendement","opbrengsten"],["groter bedrag","meer kapitaal","minder hard groeit","toekomstige"]] },
+      kernwoorden:[["beleggingsopbrengst","rendement","opbrengsten"],["groter bedrag","meer kapitaal","minder hard groeit","toekomstige"]],
+      hint:"Denk aan wat een pensioenfonds nodig heeft om aan toekomstige verplichtingen te voldoen, en wat een lagere rente daarvoor betekent." },
     { type:"bron", html: BRON_61_B },
     { type:"vraag", id:"q10", label:"b", max:2, vraag:"Leg uit dat het niet indexeren van pensioenen de dekkingsgraad van pensioenfondsen verhoogt.",
       model:"Het niet indexeren van pensioenen leidt tot minder hoge pensioenverplichtingen, dus tot minder hoge (toekomstige) uitkeringen, waardoor de dekkingsgraad stijgt.",
-      kernwoorden:[["pensioenverplichting","verplichtingen"],["lager","minder hoge","daalt","daling"]] },
+      kernwoorden:[["pensioenverplichting","verplichtingen"],["lager","minder hoge","daalt","daling"]],
+      hint:"Wat gebeurt er met de (toekomstige) pensioenverplichtingen als de uitkeringen niet meestijgen met de inflatie?" },
     { type:"bron", html: BRON_61_C },
     { type:"vraag", id:"q11", label:"c", max:2, vraag:"In de tekst hierboven worden naast een daling/stijging van de rente en het niet indexeren van pensioenen nog enkele gebeurtenissen genoemd waardoor de dekkingsgraad daalt of stijgt. Welke gebeurtenissen zijn dat en stijgt of daalt de dekkingsgraad daardoor?",
       model:"De dekkingsgraad stijgt door: het verhogen van de pensioenpremie, het korten op de pensioenuitkering, de stijging van de aandelenkoersen. De dekkingsgraad daalt door: het inzakken van de aandelenkoersen, de daling van de rendementen, een stijging van de levensverwachting.",
-      kernwoorden:[["premie"],["aandelenkoers","beurs","aandelen"],["rendement"],["levensverwachting"]] },
+      kernwoorden:[["premie"],["aandelenkoers","beurs","aandelen"],["rendement"],["levensverwachting"]],
+      hint:"Lees de tekst nog eens goed door en let op alle genoemde oorzaken naast rente en indexatie: denk aan premies, aandelenkoersen en levensverwachting." },
   ]},
   { id:"g4", titel:"Opdracht 6.2", items:[
     { type:"bron", html: BRON_62 },
     { type:"vraag", id:"q12", label:"1", max:1, vraag:"Bereken de hoogte van zijn maandelijkse pensioenuitkering in 2010 als het pensioen welvaartsvast is.",
-      model:"Welvaartsvast pensioen in 2010 = 1,008 × 2.000 = € 2.016.", getallen:[2016] },
+      model:"Welvaartsvast pensioen in 2010 = 1,008 × 2.000 = € 2.016.", getallen:[2016],
+      hint:"Welvaartsvast betekent meestijgen met de lonen. Vermenigvuldig het bedrag van 2009 met de loonstijging." },
     { type:"vraag", id:"q13", label:"2", max:1, vraag:"Bereken hoeveel euro Casper in 2010 per maand zou krijgen als zijn uitkering waardevast is.",
-      model:"Waardevast pensioen in 2010 = 1,014 × 2.000 = € 2.028.", getallen:[2028] },
+      model:"Waardevast pensioen in 2010 = 1,014 × 2.000 = € 2.028.", getallen:[2028],
+      hint:"Waardevast betekent meestijgen met de prijzen (inflatie). Vermenigvuldig het bedrag van 2009 met de prijsstijging." },
     { type:"vraag", id:"q14", label:"3", max:2, vraag:"Welke van de drie maatregelen (a, b of c, zie hierboven) ter verbetering van de betaalbaarheid van pensioenfondsen valt in 2010 af? Verklaar het antwoord.",
       model:"Maatregel a) valt af: doordat de prijzen meer stijgen dan de lonen, zouden de waardevaste uitkeringen juist meer stijgen dan de welvaartsvaste uitkeringen — dat verbetert de betaalbaarheid niet.",
-      kernwoorden:[["waardevast","maatregel a","optie a"],["meer stijgen","harder stijgen","stijgen meer dan"]] },
+      kernwoorden:[["waardevast","maatregel a","optie a"],["meer stijgen","harder stijgen","stijgen meer dan"]],
+      hint:"Vergelijk de prijsstijging met de loonstijging in 2010, en bedenk welke van de drie maatregelen daardoor niet verbetert." },
     { type:"vraag", id:"q15", label:"4", max:1, vraag:"Bereken in procenten de daling van Caspers koopkracht als het pensioen in 2010 bevroren wordt op het bedrag van 2009. Rond af op 3 decimalen.",
-      model:"(100 / 101,4) × 100 = 98,619. Zijn koopkracht daalt met 100 – 98,619 = 1,381%.", getallen:[1.381,98.619] },
+      model:"(100 / 101,4) × 100 = 98,619. Zijn koopkracht daalt met 100 – 98,619 = 1,381%.", getallen:[1.381,98.619],
+      hint:"Als het bedrag gelijk blijft maar de prijzen stijgen, daalt de koopkracht. Gebruik de prijsstijging van 2010 in je berekening." },
     { type:"bron", html: BRON_62_5 },
     { type:"vraag", id:"q16", label:"5", max:2, vraag:"Leg uit dat als Casper Jansen zijn eigen belang nastreeft, hij kiest voor premieverhoging om de betaalbaarheid van het (welvaartsvaste) pensioen te handhaven.",
       model:"Casper ontvangt zelf een pensioenuitkering en betaalt geen premie meer. Hij heeft er dus alleen voordeel bij als er meer premie binnenkomt (van de werkenden): daardoor stijgt het vermogen van het fonds en kan het in de toekomst de uitkeringen welvaartsvast (of hoger) houden, zonder dat dit hem zelf iets kost.",
-      kernwoorden:[["betaalt geen premie","geen premie meer","ontvangt alleen"],["voordeel","profiteert"],["vermogen","welvaartsvast blijft","hogere uitkering"]] },
+      kernwoorden:[["betaalt geen premie","geen premie meer","ontvangt alleen"],["voordeel","profiteert"],["vermogen","welvaartsvast blijft","hogere uitkering"]],
+      hint:"Bedenk: betaalt Casper nog premie? Wie profiteert van een hogere premie-inkomst zonder daar zelf meer voor te betalen?" },
   ]},
   { id:"g5", titel:"Opdracht 7.1", items:[
     { type:"bron", html: BRON_71 },
     { type:"vraag", id:"q17", label:"a", max:2, vraag:"Bereken op basis van de tabel de grijze druk in 2008 en in 2040.",
-      model:"2008: (278.935 + 81.895) / (809.065 + 677.780) × 100% = 360.830 / 1.486.845 × 100% = 24,3%. 2040: (441.390 + 203.335) / (734.530 + 581.095) × 100% = 644.725 / 1.315.625 × 100% = 49%.", getallen:[24.3,49] },
+      model:"2008: (278.935 + 81.895) / (809.065 + 677.780) × 100% = 360.830 / 1.486.845 × 100% = 24,3%. 2040: (441.390 + 203.335) / (734.530 + 581.095) × 100% = 644.725 / 1.315.625 × 100% = 49%.", getallen:[24.3,49],
+      hint:"Grijze druk = (aantal 65-plussers) / (aantal 20-64 jarigen) × 100%. Gebruik de juiste leeftijdscategorieën uit de tabel." },
     { type:"vraag", id:"q18", label:"b", max:2, vraag:"Bereken op basis van de tabel de groene druk in 2008 en in 2040.",
-      model:"2008: (134.140 + 294.395 + 148.620) / (809.065 + 677.780) × 100% = 577.155 / 1.486.845 × 100% = 38,2%. 2040: (123.765 + 260.975 + 132.245) / (734.530 + 581.095) × 100% = 516.985 / 1.315.625 × 100% = 39,3%.", getallen:[38.2,39.3] },
+      model:"2008: (134.140 + 294.395 + 148.620) / (809.065 + 677.780) × 100% = 577.155 / 1.486.845 × 100% = 38,2%. 2040: (123.765 + 260.975 + 132.245) / (734.530 + 581.095) × 100% = 516.985 / 1.315.625 × 100% = 39,3%.", getallen:[38.2,39.3],
+      hint:"Groene druk = (aantal 0-19 jarigen) / (aantal 20-64 jarigen) × 100%. Gebruik de juiste leeftijdscategorieën uit de tabel." },
     { type:"vraag", id:"q19", label:"c", max:2, vraag:"Leg met behulp van de berekende grijze en groene druk uit dat de intergenerationele solidariteit onder druk kan komen te staan.",
       model:"Zowel de grijze als de groene druk nemen toe (de groene maar licht). Dat betekent dat de werkende generatie veel meer van haar inkomen moet afstaan om de oudere (en niet-werkende) generatie te onderhouden. Het is de vraag in hoeverre de werkenden daartoe bereid blijven.",
-      kernwoorden:[["werkende generatie","werkenden"],["afstaan","afdragen","meer betalen"],["oudere generatie","ouderen","vergrijzing"]] },
+      kernwoorden:[["werkende generatie","werkenden"],["afstaan","afdragen","meer betalen"],["oudere generatie","ouderen","vergrijzing"]],
+      hint:"Kijk naar hoe de grijze en groene druk veranderen, en wat dat betekent voor wat de werkende generatie moet afdragen aan de oudere generatie." },
   ]},
 ];
 const QUESTIONS = GROUPS.flatMap(g => g.items.filter(i=>i.type==="vraag").map(v => ({...v, groep:g.titel})));
 const MAX_TOTAL = QUESTIONS.reduce((s,q)=>s+q.max,0);
 const DOCENT_WACHTWOORD = "docent";
 const KLASSEN = ["4v1 (Liempt)", "4v2 (Roest)", "4v3 (Liempt)"];
+
+/* ============================= JARGON (begrippenlijst) =============================
+   Begrippen die automatisch herkend en voorzien worden van een klikbaar (i)-icoontje
+   met uitleg, in bronteksten, vraagteksten en modelantwoorden. */
+const JARGON = {
+  "reële rente": "De rente gecorrigeerd voor inflatie: nominale rente minus het inflatiepercentage. Laat zien hoeveel koopkracht je spaargeld of lening werkelijk op- of oplevert.",
+  "nominale rente": "Het rentepercentage zoals dat op papier staat, zonder rekening te houden met inflatie.",
+  "dekkingsgraad": "De verhouding tussen het vermogen van een pensioenfonds en de waarde van alle (toekomstige) pensioenverplichtingen, in procenten. Bij 100% is er precies genoeg vermogen om alle toekomstige uitkeringen te kunnen betalen.",
+  "welvaartsvast": "Een pensioen dat meestijgt met de ontwikkeling van de lonen, zodat de koopkracht ten opzichte van werkenden gelijk blijft.",
+  "waardevast": "Een pensioen dat meestijgt met de inflatie, zodat de koopkracht van het pensioen gelijk blijft.",
+  "grijze druk": "Het aantal 65-plussers gedeeld door het aantal mensen in de werkende leeftijd (20-64 jaar), als percentage. Een maat voor de druk van de vergrijzing op de werkende generatie.",
+  "groene druk": "Het aantal jongeren (0-19 jaar) gedeeld door het aantal mensen in de werkende leeftijd (20-64 jaar), als percentage.",
+  "intergenerationele solidariteit": "De bereidheid van de ene generatie (bijvoorbeeld werkenden) om bij te dragen aan het inkomen of pensioen van een andere generatie (bijvoorbeeld ouderen).",
+  "intertemporele ruil": "Het ruilen van consumptie tussen nu en later: sparen (consumptie uitstellen) of lenen (consumptie naar voren halen).",
+  "ruilen over de tijd": "Het ruilen van consumptie tussen nu en later: sparen (consumptie uitstellen) of lenen (consumptie naar voren halen).",
+  "indexeren": "Een uitkering (zoals een pensioen) laten meestijgen met de inflatie of de lonen.",
+  "pensioenpremie": "Het bedrag dat werkenden (en/of werkgevers) periodiek inleggen bij een pensioenfonds, waaruit later de pensioenen worden betaald.",
+  "koopkracht": "Wat je met je inkomen daadwerkelijk kunt kopen; koopkracht daalt als de prijzen harder stijgen dan je inkomen.",
+  "marginaal belastingtarief": "Het belastingtarief dat geldt over het laatst verdiende (hoogste) deel van het inkomen, horend bij de hoogste belastingschijf die iemand bereikt.",
+  "belastingvoordeel": "Het bedrag dat je bespaart aan belasting, bijvoorbeeld door de aftrekbaarheid van hypotheekrente.",
+};
+const JARGON_TERMEN = Object.keys(JARGON).sort((a,b)=> b.length - a.length);
+function escRegex(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+const JARGON_REGEX = new RegExp("(" + JARGON_TERMEN.map(escRegex).join("|") + ")", "gi");
+function jargonize(tekst){
+  if (!tekst) return tekst;
+  return tekst.replace(JARGON_REGEX, (m) => {
+    const key = JARGON_TERMEN.find(t => t.toLowerCase() === m.toLowerCase()) || m;
+    return `${m}<button type="button" class="jargon-i" data-term="${esc(key)}" aria-label="Uitleg bij ${esc(key)}" title="Uitleg">ⓘ</button>`;
+  });
+}
+function toonJargonPopup(term){
+  const def = JARGON[term] || "";
+  const bestaand = document.getElementById("jargon-overlay");
+  if (bestaand) bestaand.remove();
+  const overlay = document.createElement("div");
+  overlay.id = "jargon-overlay";
+  overlay.className = "fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4";
+  overlay.innerHTML = `
+    <div class="bg-white rounded-xl shadow-lg max-w-sm w-full p-4">
+      <div class="flex justify-between items-start gap-2">
+        <div class="font-semibold text-slate-800 text-sm capitalize">${esc(term)}</div>
+        <button id="jargon-close" class="text-slate-400 hover:text-slate-600 text-sm shrink-0">✕</button>
+      </div>
+      <p class="text-sm text-slate-600 mt-2">${esc(def)}</p>
+    </div>`;
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+  document.getElementById("jargon-close").onclick = () => overlay.remove();
+}
+function bindJargon(root){
+  root.querySelectorAll(".jargon-i").forEach(btn => {
+    btn.onclick = (e) => { e.stopPropagation(); toonJargonPopup(btn.dataset.term); };
+  });
+}
 
 /* ============================= HEURISTISCHE BEOORDELING ============================= */
 function extractNumbers(tekst){
@@ -209,6 +285,7 @@ function esc(s){ return (s==null?"":String(s)).replace(/[&<>"']/g, c => ({'&':'&
 function fmt(n){ return (Math.round(n*10)/10).toString().replace(".", ","); }
 function qTotalSelf(a){ return QUESTIONS.reduce((s,q)=> s + (Number(a?.[q.id]?.selfScore)||0), 0); }
 function qTotalProg(a){ return QUESTIONS.reduce((s,q)=> s + (Number(a?.[q.id]?.progScore)||0), 0); }
+function aantalHintsGebruikt(a){ return QUESTIONS.filter(q => a?.[q.id]?.hintGebruikt).length; }
 
 /* Vergelijkt zelfbeoordeling met de automatische controle en geeft een
    vriendelijke, beknopte terugkoppeling over een eventueel patroon.
@@ -237,6 +314,19 @@ function analyseerZelfbeoordeling(a){
   }
   return "Je zelfbeoordeling kwam dit keer goed overeen met de automatische controle. Dat is een teken dat je een realistisch beeld hebt van je eigen werk — knap gedaan!";
 }
+/* Geeft een korte, vriendelijke opmerking over het hintgebruik, als aanvulling
+   op analyseerZelfbeoordeling(). Geeft een lege string als er niets zinnigs
+   over te zeggen is. */
+function analyseerHintgebruik(a){
+  const totaal = QUESTIONS.length;
+  const gebruikt = aantalHintsGebruikt(a);
+  if (gebruikt === 0) return "Je hebt alle vragen zelfstandig gemaakt, zonder een hint te gebruiken. Mooi gedaan!";
+  const fractie = gebruikt / totaal;
+  if (fractie >= 0.5) {
+    return `Je hebt bij ${gebruikt} van de ${totaal} vragen een hint gebruikt. Dat mag natuurlijk, maar probeer de volgende keer eerst zelf na te denken voordat je de hint opent.`;
+  }
+  return `Je hebt bij ${gebruikt} van de ${totaal} vragen gebruikgemaakt van een hint.`;
+}
 function groepVoltooid(idx){ return GROUPS[idx].items.filter(i=>i.type==="vraag").every(v => answers[v.id]?.checked); }
 
 function b64encode(obj){
@@ -251,7 +341,7 @@ function b64decode(str){
   return JSON.parse(new TextDecoder().decode(bytes));
 }
 function maakCode(){
-  return b64encode({ v:1, naam: studentName, klas: studentKlas, antwoorden: answers, totaalSelf: qTotalSelf(answers), totaalProg: qTotalProg(answers), tijd: Date.now() });
+  return b64encode({ v:1, naam: studentName, klas: studentKlas, antwoorden: answers, totaalSelf: qTotalSelf(answers), totaalProg: qTotalProg(answers), totaalHints: aantalHintsGebruikt(answers), tijd: Date.now() });
 }
 function saveLocal(){
   localStorage.setItem("vermogen_antwoorden", JSON.stringify(answers));
@@ -266,6 +356,7 @@ async function syncNaarSupabase(){
     const { error } = await supabaseClient.from("submissions").upsert({
       naam: studentName, klas: studentKlas, antwoorden: answers,
       totaal_self: qTotalSelf(answers), totaal_prog: qTotalProg(answers),
+      totaal_hints: aantalHintsGebruikt(answers),
       bijgewerkt: new Date().toISOString()
     }, { onConflict: "naam" });
     syncStatus = error ? "Opslaan mislukt, probeer het later nog eens." : "Opgeslagen voor je docent ✓";
@@ -280,7 +371,7 @@ async function laadRemoteData(){
   try {
     const { data, error } = await supabaseClient.from("submissions").select("*").order("naam");
     if (error) throw error;
-    remoteRows = (data||[]).map(r => ({ naam:r.naam, klas:r.klas||"", totaalSelf:Number(r.totaal_self)||0, totaalProg:Number(r.totaal_prog)||0, antwoorden:r.antwoorden||{} }));
+    remoteRows = (data||[]).map(r => ({ naam:r.naam, klas:r.klas||"", totaalSelf:Number(r.totaal_self)||0, totaalProg:Number(r.totaal_prog)||0, totaalHints:Number(r.totaal_hints)||0, antwoorden:r.antwoorden||{} }));
   } catch(e){ remoteError = "Kon de resultaten niet ophalen. Probeer te verversen."; }
   remoteLoading = false; render();
 }
@@ -352,6 +443,7 @@ function renderQuiz(){
         <div class="mt-4 pt-4 border-t border-slate-100">
           <div class="text-sm font-medium text-slate-700 mb-1">Hoe ging het zelf nakijken?</div>
           <p class="text-sm text-slate-600">${esc(analyseerZelfbeoordeling(answers))}</p>
+          <p class="text-sm text-slate-600 mt-2">${esc(analyseerHintgebruik(answers))}</p>
         </div>`}
         ${SUPABASE_AAN ? `
           <div class="mt-4 pt-4 border-t border-slate-100 text-sm">
@@ -402,7 +494,7 @@ function renderQuiz(){
       <div class="mt-3 flex-1 min-h-0 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="bg-amber-50 border border-amber-100 rounded-xl p-4 text-sm text-slate-700 overflow-y-auto">
           <h2 class="text-base font-semibold text-slate-800 mb-2">${esc(groep.titel)} — bronmateriaal</h2>
-          ${bronHtml || `<p class="text-slate-400 italic">Geen bronmateriaal bij deze opgave.</p>`}
+          ${jargonize(bronHtml) || `<p class="text-slate-400 italic">Geen bronmateriaal bij deze opgave.</p>`}
         </div>
 
         <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 overflow-y-auto flex flex-col">
@@ -410,7 +502,15 @@ function renderQuiz(){
             <div class="text-xs font-semibold text-indigo-600 uppercase tracking-wide">${q.label ? "Vraag " + esc(q.label) : "Vraag"} <span class="text-slate-400 normal-case">(${vraagIndexInGroep+1}/${vragenInGroep.length})</span></div>
             <div class="text-xs text-slate-400 shrink-0">max. ${q.max} pt</div>
           </div>
-          <p class="mt-1.5 text-slate-800">${esc(q.vraag)}</p>
+          <p class="mt-1.5 text-slate-800">${jargonize(esc(q.vraag))}</p>
+          <div class="mt-2">
+            ${q.hint ? (a.hintGebruikt ? `
+              <div class="bg-amber-50 border border-amber-100 rounded-lg p-2.5 text-xs text-amber-800">
+                <span class="font-medium">Hint:</span> ${jargonize(esc(q.hint))}
+              </div>` : `
+              <button data-qid="${q.id}" class="hint-btn text-xs text-indigo-600 underline">Hint nodig?</button>
+            `) : ``}
+          </div>
           <textarea data-qid="${q.id}" class="antwoord-input mt-3 w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" rows="4" placeholder="Jouw antwoord...">${esc(a.antwoord||"")}</textarea>
           <div class="flex justify-end mt-2">
             <button data-qid="${q.id}" class="check-btn text-sm bg-slate-800 text-white rounded-lg px-3 py-1.5 hover:bg-slate-900">Nakijken</button>
@@ -419,7 +519,7 @@ function renderQuiz(){
             <div class="mt-3 pt-3 border-t border-slate-100 space-y-3">
               <div class="bg-emerald-50 border border-emerald-100 rounded-lg p-3 text-sm">
                 <div class="font-medium text-emerald-800 mb-1">Modelantwoord</div>
-                <div class="text-emerald-900">${esc(q.model)}</div>
+                <div class="text-emerald-900">${jargonize(esc(q.model))}</div>
               </div>
               <div>
                 <div class="text-sm font-medium text-slate-600 mb-1">Jouw zelfbeoordeling</div>
@@ -440,7 +540,18 @@ function renderQuiz(){
     </div>
   `;
   app.innerHTML = html;
+  bindJargon(app);
 
+  app.querySelectorAll(".hint-btn").forEach(el => {
+    el.onclick = (e) => {
+      const qid = e.target.dataset.qid;
+      answers[qid] = answers[qid] || {};
+      answers[qid].hintGebruikt = true;
+      saveLocal();
+      render();
+      if (SUPABASE_AAN) syncNaarSupabase();
+    };
+  });
   app.querySelectorAll(".antwoord-input").forEach(el => {
     el.addEventListener("change", (e) => {
       const qid = e.target.dataset.qid;
@@ -612,7 +723,7 @@ function renderDocent(){
               <div class="flex justify-between text-xs text-slate-500 mb-0.5">
                 <span class="font-medium text-slate-700">${esc(r.naam)}${r.klas? ` <span class="font-normal text-slate-400">(${esc(r.klas)})</span>`:""}</span>
                 <span>
-                  ${fmt(r.totaalSelf||0)} (zelf) · ${fmt(r.totaalProg||0)} (prog.) / ${MAX_TOTAL}
+                  ${fmt(r.totaalSelf||0)} (zelf) · ${fmt(r.totaalProg||0)} (prog.) / ${MAX_TOTAL} · ${r.totaalHints||0} hint${(r.totaalHints||0)===1?"":"s"}
                   ${SUPABASE_AAN ? "" : `<button data-naam="${esc(r.naam)}" class="del-btn text-red-400 hover:text-red-600 ml-2" title="Verwijder">✕</button>`}
                 </span>
               </div>
@@ -638,6 +749,7 @@ function renderDocent(){
               <th class="py-1.5 pr-2 whitespace-nowrap">Klas</th>
               ${QUESTIONS.map(q=>`<th class="py-1.5 px-1.5 text-center whitespace-nowrap">${esc(q.groep.split(" ").pop())}${q.label?"-"+esc(q.label):""}</th>`).join("")}
               <th class="py-1.5 px-2 text-center font-semibold">Totaal</th>
+              <th class="py-1.5 px-2 text-center font-semibold whitespace-nowrap">Hints</th>
             </tr>
           </thead>
           <tbody>
@@ -650,6 +762,7 @@ function renderDocent(){
                   return `<td class="py-1.5 px-1.5 text-center text-slate-500 whitespace-nowrap">${qa.selfScore!=null?fmt(qa.selfScore):"–"}/${qa.progScore!=null?fmt(qa.progScore):"–"}</td>`;
                 }).join("")}
                 <td class="py-1.5 px-2 text-center font-semibold text-slate-800 whitespace-nowrap">${fmt(r.totaalSelf||0)}/${fmt(r.totaalProg||0)}</td>
+                <td class="py-1.5 px-2 text-center text-slate-500 whitespace-nowrap">${r.totaalHints||0}</td>
               </tr>`).join("")}
           </tbody>
         </table>
@@ -709,8 +822,8 @@ function renderDocent(){
   });
   const csvBtn = document.getElementById("csv-btn");
   if (csvBtn) csvBtn.onclick = async () => {
-    const header = ["Leerling", "Klas", ...QUESTIONS.map(q=>`${q.groep} ${q.label} (zelf)`), ...QUESTIONS.map(q=>`${q.groep} ${q.label} (prog)`), "Totaal zelf","Totaal programma"].join(";");
-    const lines = rows.map(r => [r.naam, r.klas||"", ...QUESTIONS.map(q=>(r.antwoorden||{})[q.id]?.selfScore??""), ...QUESTIONS.map(q=>(r.antwoorden||{})[q.id]?.progScore??""), fmt(r.totaalSelf||0), fmt(r.totaalProg||0)].join(";"));
+    const header = ["Leerling", "Klas", ...QUESTIONS.map(q=>`${q.groep} ${q.label} (zelf)`), ...QUESTIONS.map(q=>`${q.groep} ${q.label} (prog)`), "Totaal zelf","Totaal programma","Hints"].join(";");
+    const lines = rows.map(r => [r.naam, r.klas||"", ...QUESTIONS.map(q=>(r.antwoorden||{})[q.id]?.selfScore??""), ...QUESTIONS.map(q=>(r.antwoorden||{})[q.id]?.progScore??""), fmt(r.totaalSelf||0), fmt(r.totaalProg||0), r.totaalHints||0].join(";"));
     const csv = [header, ...lines].join("\n");
     try { await navigator.clipboard.writeText(csv); csvBtn.textContent = "Gekopieerd ✓"; setTimeout(()=>csvBtn.textContent="Kopieer als CSV", 1500); }
     catch(e){ alert("Kopiëren niet gelukt. Probeer het opnieuw."); }
