@@ -165,6 +165,7 @@ const GROUPS = [
 const QUESTIONS = GROUPS.flatMap(g => g.items.filter(i=>i.type==="vraag").map(v => ({...v, groep:g.titel})));
 const MAX_TOTAL = QUESTIONS.reduce((s,q)=>s+q.max,0);
 const DOCENT_WACHTWOORD = "docent";
+const KLASSEN = ["4v1 (Liempt)", "4v2 (Roest)", "4v3 (Liempt)"];
 
 /* ============================= HEURISTISCHE BEOORDELING ============================= */
 function extractNumbers(tekst){
@@ -193,6 +194,8 @@ function scoreAntwoord(q, tekst){
 
 /* ============================= STATE ============================= */
 let studentName = localStorage.getItem("vermogen_naam") || "";
+let studentKlas = localStorage.getItem("vermogen_klas") || "";
+let docentKlasFilter = sessionStorage.getItem("vermogen_docent_klasfilter") || "";
 let answers = {};
 try { answers = JSON.parse(localStorage.getItem("vermogen_antwoorden")||"{}"); } catch(e){ answers = {}; }
 let view = (location.hash === "#docent") ? "docent" : "start";
@@ -248,11 +251,12 @@ function b64decode(str){
   return JSON.parse(new TextDecoder().decode(bytes));
 }
 function maakCode(){
-  return b64encode({ v:1, naam: studentName, antwoorden: answers, totaalSelf: qTotalSelf(answers), totaalProg: qTotalProg(answers), tijd: Date.now() });
+  return b64encode({ v:1, naam: studentName, klas: studentKlas, antwoorden: answers, totaalSelf: qTotalSelf(answers), totaalProg: qTotalProg(answers), tijd: Date.now() });
 }
 function saveLocal(){
   localStorage.setItem("vermogen_antwoorden", JSON.stringify(answers));
   localStorage.setItem("vermogen_naam", studentName);
+  localStorage.setItem("vermogen_klas", studentKlas);
   localStorage.setItem("vermogen_groep", String(huidigeGroep));
 }
 async function syncNaarSupabase(){
@@ -260,7 +264,7 @@ async function syncNaarSupabase(){
   syncStatus = "Opslaan...";
   try {
     const { error } = await supabaseClient.from("submissions").upsert({
-      naam: studentName, antwoorden: answers,
+      naam: studentName, klas: studentKlas, antwoorden: answers,
       totaal_self: qTotalSelf(answers), totaal_prog: qTotalProg(answers),
       bijgewerkt: new Date().toISOString()
     }, { onConflict: "naam" });
@@ -276,7 +280,7 @@ async function laadRemoteData(){
   try {
     const { data, error } = await supabaseClient.from("submissions").select("*").order("naam");
     if (error) throw error;
-    remoteRows = (data||[]).map(r => ({ naam:r.naam, totaalSelf:Number(r.totaal_self)||0, totaalProg:Number(r.totaal_prog)||0, antwoorden:r.antwoorden||{} }));
+    remoteRows = (data||[]).map(r => ({ naam:r.naam, klas:r.klas||"", totaalSelf:Number(r.totaal_self)||0, totaalProg:Number(r.totaal_prog)||0, antwoorden:r.antwoorden||{} }));
   } catch(e){ remoteError = "Kon de resultaten niet ophalen. Probeer te verversen."; }
   remoteLoading = false; render();
 }
@@ -292,6 +296,11 @@ function renderStart(){
         <label class="block text-sm font-medium text-slate-700 mb-2">Jouw naam</label>
         <input id="naam-input" type="text" value="${esc(studentName)}" placeholder="Voor- en achternaam"
           class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500" />
+        <label class="block text-sm font-medium text-slate-700 mb-2 mt-4">Jouw klas</label>
+        <select id="klas-input" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white">
+          <option value="" ${studentKlas? "" : "selected"} disabled>Kies je klas...</option>
+          ${KLASSEN.map(k => `<option value="${esc(k)}" ${studentKlas===k?"selected":""}>${esc(k)}</option>`).join("")}
+        </select>
         <button id="start-btn" class="mt-4 w-full bg-indigo-600 text-white rounded-lg py-2.5 font-medium hover:bg-indigo-700 transition">
           ${huidigeGroep>0 || Object.keys(answers).length ? "Verder gaan" : "Begin de toets"}
         </button>
@@ -301,8 +310,10 @@ function renderStart(){
     </div>`;
   document.getElementById("start-btn").onclick = () => {
     const v = document.getElementById("naam-input").value.trim();
+    const k = document.getElementById("klas-input").value;
     if (!v) { alert("Vul je naam in."); return; }
-    studentName = v; saveLocal();
+    if (!k) { alert("Kies je klas."); return; }
+    studentName = v; studentKlas = k; saveLocal();
     view = "quiz"; render();
   };
   document.getElementById("docent-link").onclick = () => { location.hash = "#docent"; view="docent"; render(); };
@@ -539,9 +550,10 @@ function renderDocent(){
   if (SUPABASE_AAN && remoteRows === null && !remoteLoading && !remoteError) { laadRemoteData(); }
 
   const data = SUPABASE_AAN ? null : getDocentData();
-  const rows = SUPABASE_AAN
+  const alleRows = SUPABASE_AAN
     ? (remoteRows || []).slice().sort((x,y)=> x.naam.localeCompare(y.naam))
     : Object.values(data).sort((x,y)=> x.naam.localeCompare(y.naam));
+  const rows = docentKlasFilter ? alleRows.filter(r => (r.klas||"")===docentKlasFilter) : alleRows;
   const n = rows.length;
   const klasGemSelf = n ? rows.reduce((s,r)=>s+(r.totaalSelf||0),0)/n : 0;
   const klasGemProg = n ? rows.reduce((s,r)=>s+(r.totaalProg||0),0)/n : 0;
@@ -554,6 +566,14 @@ function renderDocent(){
           <p class="text-slate-500 text-sm mt-0.5">${n} inzending${n===1?"":"en"} · max. ${MAX_TOTAL} punten ${SUPABASE_AAN ? "· live" : ""}</p>
         </div>
         <button id="back" class="text-sm text-indigo-600 underline">← Naar de toets</button>
+      </div>
+
+      <div class="mt-4 flex items-center gap-2">
+        <label class="text-sm text-slate-600">Klas:</label>
+        <select id="klas-filter" class="text-sm border border-slate-300 rounded-lg px-2 py-1.5 bg-white">
+          <option value="">Alle klassen</option>
+          ${KLASSEN.map(k => `<option value="${esc(k)}" ${docentKlasFilter===k?"selected":""}>${esc(k)}</option>`).join("")}
+        </select>
       </div>
 
       ${SUPABASE_AAN ? `
@@ -590,7 +610,7 @@ function renderDocent(){
           ${rows.map(r => `
             <div>
               <div class="flex justify-between text-xs text-slate-500 mb-0.5">
-                <span class="font-medium text-slate-700">${esc(r.naam)}</span>
+                <span class="font-medium text-slate-700">${esc(r.naam)}${r.klas? ` <span class="font-normal text-slate-400">(${esc(r.klas)})</span>`:""}</span>
                 <span>
                   ${fmt(r.totaalSelf||0)} (zelf) · ${fmt(r.totaalProg||0)} (prog.) / ${MAX_TOTAL}
                   ${SUPABASE_AAN ? "" : `<button data-naam="${esc(r.naam)}" class="del-btn text-red-400 hover:text-red-600 ml-2" title="Verwijder">✕</button>`}
@@ -615,6 +635,7 @@ function renderDocent(){
           <thead>
             <tr class="text-left text-slate-400 border-b border-slate-200">
               <th class="py-1.5 pr-2 sticky left-0 bg-white">Leerling</th>
+              <th class="py-1.5 pr-2 whitespace-nowrap">Klas</th>
               ${QUESTIONS.map(q=>`<th class="py-1.5 px-1.5 text-center whitespace-nowrap">${esc(q.groep.split(" ").pop())}${q.label?"-"+esc(q.label):""}</th>`).join("")}
               <th class="py-1.5 px-2 text-center font-semibold">Totaal</th>
             </tr>
@@ -623,6 +644,7 @@ function renderDocent(){
             ${rows.map(r => `
               <tr class="border-b border-slate-100">
                 <td class="py-1.5 pr-2 font-medium text-slate-700 sticky left-0 bg-white whitespace-nowrap">${esc(r.naam)}</td>
+                <td class="py-1.5 pr-2 text-slate-500 whitespace-nowrap">${esc(r.klas||"–")}</td>
                 ${QUESTIONS.map(q => {
                   const qa = (r.antwoorden||{})[q.id]||{};
                   return `<td class="py-1.5 px-1.5 text-center text-slate-500 whitespace-nowrap">${qa.selfScore!=null?fmt(qa.selfScore):"–"}/${qa.progScore!=null?fmt(qa.progScore):"–"}</td>`;
@@ -657,6 +679,11 @@ function renderDocent(){
   app.innerHTML = html;
   document.getElementById("back").onclick = () => { location.hash=""; view="start"; render(); };
   document.getElementById("logout").onclick = () => { docentOk = false; sessionStorage.removeItem("vermogen_docent_ok"); render(); };
+  document.getElementById("klas-filter").onchange = (e) => {
+    docentKlasFilter = e.target.value;
+    sessionStorage.setItem("vermogen_docent_klasfilter", docentKlasFilter);
+    render();
+  };
   const refreshBtn = document.getElementById("refresh-btn");
   if (refreshBtn) refreshBtn.onclick = () => laadRemoteData();
   const addBtn = document.getElementById("add-btn");
@@ -682,8 +709,8 @@ function renderDocent(){
   });
   const csvBtn = document.getElementById("csv-btn");
   if (csvBtn) csvBtn.onclick = async () => {
-    const header = ["Leerling", ...QUESTIONS.map(q=>`${q.groep} ${q.label} (zelf)`), ...QUESTIONS.map(q=>`${q.groep} ${q.label} (prog)`), "Totaal zelf","Totaal programma"].join(";");
-    const lines = rows.map(r => [r.naam, ...QUESTIONS.map(q=>(r.antwoorden||{})[q.id]?.selfScore??""), ...QUESTIONS.map(q=>(r.antwoorden||{})[q.id]?.progScore??""), fmt(r.totaalSelf||0), fmt(r.totaalProg||0)].join(";"));
+    const header = ["Leerling", "Klas", ...QUESTIONS.map(q=>`${q.groep} ${q.label} (zelf)`), ...QUESTIONS.map(q=>`${q.groep} ${q.label} (prog)`), "Totaal zelf","Totaal programma"].join(";");
+    const lines = rows.map(r => [r.naam, r.klas||"", ...QUESTIONS.map(q=>(r.antwoorden||{})[q.id]?.selfScore??""), ...QUESTIONS.map(q=>(r.antwoorden||{})[q.id]?.progScore??""), fmt(r.totaalSelf||0), fmt(r.totaalProg||0)].join(";"));
     const csv = [header, ...lines].join("\n");
     try { await navigator.clipboard.writeText(csv); csvBtn.textContent = "Gekopieerd ✓"; setTimeout(()=>csvBtn.textContent="Kopieer als CSV", 1500); }
     catch(e){ alert("Kopiëren niet gelukt. Probeer het opnieuw."); }
